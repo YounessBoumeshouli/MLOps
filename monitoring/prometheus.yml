@@ -1,0 +1,27 @@
+# Prometheus configuration for scraping metrics from the API
+
+global:
+  scrape_interval: 15s  # Scrape targets every 15 seconds
+  evaluation_interval: 15s  # Evaluate rules every 15 seconds
+  external_labels:
+    monitor: 'mlops-monitor'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # MLOps API metrics
+  - job_name: 'mlops-api'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['api:8000']
+        labels:
+          service: 'mlops-api'
+          environment: 'production'
+    
+    # Scrape interval for API (can be different from global)
+    scrape_interval: 10s
+    scrape_timeout: 5s
