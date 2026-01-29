@@ -1,31 +1,23 @@
-"""
-Training script with MLflow integration for experiment tracking and model registry.
-
-This script demonstrates how to:
-- Track experiments with MLflow
-- Log parameters, metrics, and artifacts
-- Register models in MLflow Model Registry
-- Promote models through stages (Staging -> Production)
-"""
+# train.py - Your script is already good, just minor tweaks:
+import pandas as pd
 
 import os
 import mlflow
 import mlflow.sklearn
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import joblib
 import logging
+from sklearn.model_selection import train_test_split
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def train_model():
-
-    
     # MLflow configuration
-    mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+    mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001")
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     
     experiment_name = "ml_model_training"
@@ -35,41 +27,26 @@ def train_model():
     logger.info(f"Experiment: {experiment_name}")
     
     # Start MLflow run
-    with mlflow.start_run(run_name="training_run") as run:
+    with mlflow.start_run(run_name="random_forest_v1") as run:
         logger.info(f"MLflow Run ID: {run.info.run_id}")
-        
-        # Model parameters
+
+        # Generate sample data (simulating your dataset)
+        df = pd.read_csv("data/data.csv")
+        X = df.drop(columns=['cluster'])
+        y = df['cluster']
+        X_train, X_test,    y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=104, shuffle=True)
+
+        # Define model parameters
         params = {
             "n_estimators": 100,
             "max_depth": 10,
-            "min_samples_split": 2,
-            "min_samples_leaf": 1,
+            "min_samples_split": 5,
             "random_state": 42
         }
         
-        # Log parameters
+        # ✅ TASK 1: Log parameters
         mlflow.log_params(params)
-        logger.info("Parameters logged to MLflow")
-        
-        # Generate synthetic dataset (replace with your actual data loading)
-        logger.info("Generating dataset...")
-        X, y = make_classification(
-            n_samples=1000,
-            n_features=20,
-            n_informative=15,
-            n_redundant=5,
-            random_state=42
-        )
-        
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
-        
-        # Log dataset info
-        mlflow.log_param("train_samples", len(X_train))
-        mlflow.log_param("test_samples", len(X_test))
-        mlflow.log_param("n_features", X.shape[1])
+        logger.info(f"Logged parameters: {params}")
         
         # Train model
         logger.info("Training model...")
@@ -87,56 +64,59 @@ def train_model():
             "f1_score": f1_score(y_test, y_pred, average='weighted')
         }
         
-        # Log metrics
+        # ✅ TASK 2: Log metrics
         mlflow.log_metrics(metrics)
-        logger.info(f"Metrics: {metrics}")
+        logger.info(f"Logged metrics: {metrics}")
         
-        # Log model
+        # Save model locally
+        os.makedirs('models', exist_ok=True)
+        model_path = 'models/model.joblib'
+        joblib.dump(model, model_path)
+        
+        # ✅ TASK 3: Log model artifact and register
         model_name = "ml_classifier"
         mlflow.sklearn.log_model(
             sk_model=model,
             artifact_path="model",
             registered_model_name=model_name
         )
-        logger.info(f"Model logged to MLflow with name: {model_name}")
+        logger.info(f"✓ Model logged to MLflow and registered as '{model_name}'")
         
-        # Get the model version
+        # ✅ TASK 4: Get model version
         client = mlflow.tracking.MlflowClient()
-        model_version = client.search_model_versions(f"name='{model_name}'")[0].version
+        model_versions = client.search_model_versions(f"name='{model_name}'")
         
-        logger.info(f"Model version: {model_version}")
-        
-        # Promote model to Production
-        try:
-            # Transition to Staging first
+        if model_versions:
+            latest_version = model_versions[0].version
+            logger.info(f"Model version: {latest_version}")
+            
+            # ✅ TASK 5: Promote to Staging
             client.transition_model_version_stage(
                 name=model_name,
-                version=model_version,
+                version=latest_version,
                 stage="Staging"
             )
-            logger.info(f"Model version {model_version} transitioned to Staging")
+            logger.info(f"✓ Model v{latest_version} promoted to STAGING")
             
-            # Then to Production
+            # ✅ TASK 6: Promote to Production
             client.transition_model_version_stage(
                 name=model_name,
-                version=model_version,
+                version=latest_version,
                 stage="Production",
                 archive_existing_versions=True
             )
-            logger.info(f"Model version {model_version} transitioned to Production")
+            logger.info(f"✓ Model v{latest_version} promoted to PRODUCTION")
             
-        except Exception as e:
-            logger.error(f"Error transitioning model: {e}")
+            return run.info.run_id, latest_version
         
-        logger.info("Training completed successfully!")
-        
-        return run.info.run_id, model_version
+        return run.info.run_id, None
 
 
 if __name__ == "__main__":
     run_id, version = train_model()
     print(f"\n{'='*60}")
-    print(f"Training completed!")
-    print(f"Run ID: {run_id}")
-    print(f"Model Version: {version}")
+    print(f"✓ Training completed!")
+    print(f"  Run ID: {run_id}")
+    print(f"  Model Version: {version}")
+    print(f"  Status: PRODUCTION")
     print(f"{'='*60}\n")

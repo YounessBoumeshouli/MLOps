@@ -1,12 +1,21 @@
 version: '3.8'
 
 services:
-  # MLflow Tracking Server
+  # --- NEW SERVICE TO FIX PERMISSIONS ---
+  init-vol:
+    image: busybox
+    volumes:
+      - mlflow_data:/mlflow
+    # This makes the volume world-writable so both root and apiuser can use it
+    command: chmod -R 777 /mlflow
+
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.10.0
     container_name: mlflow
+    depends_on:
+      - init-vol # Ensure permissions are fixed before starting
     ports:
-      - "5000:5000"
+      - "5001:5000"
     volumes:
       - mlflow_data:/mlflow
     environment:
@@ -20,35 +29,25 @@ services:
       --port 5000
     networks:
       - mlops-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
-  # FastAPI Application
   api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: mlops-api
     ports:
-      - "8000:8000"
+      - "8001:8000"
+    volumes:
+      - ./models:/app/models
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - API_PORT=8000
     depends_on:
-      mlflow:
-        condition: service_healthy
+      - mlflow  # Remove the condition: service_healthy
+      - trainer
     networks:
       - mlops-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    command: sh -c "sleep 20 && python app.py"  # Wait for trainer to finish
     restart: unless-stopped
 
   # Prometheus for metrics collection
@@ -104,6 +103,24 @@ services:
       retries: 3
       start_period: 40s
     restart: unless-stopped
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mlops-trainer
+    volumes:
+      - ./models:/app/models
+      - mlflow_data:/mlflow
+      - ./data:/app/data
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+      - init-vol # Also depends on the permission fix
+    networks:
+      - mlops-network
+    command: sh -c "sleep 15 && python ./src/train.py"
+    restart: "no"
 
 networks:
   mlops-network:

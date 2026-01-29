@@ -8,9 +8,9 @@ docker-compose up -d
 ```
 
 **Services**:
-- MLflow: http://localhost:5000
-- API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- MLflow: http://localhost:5001
+- API: http://localhost:8001
+- API Docs: http://localhost:8001/docs
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000 (admin/admin)
 
@@ -24,10 +24,10 @@ python src/train.py
 
 ```bash
 # Health check
-curl http://localhost:8000/health
+curl http://localhost:8001/health
 
 # Prediction
-curl -X POST http://localhost:8000/predict \
+curl -X POST http://localhost:8001/predict \
   -H "Content-Type: application/json" \
   -d "{\"features\": [1.5, -0.3, 2.1, 0.8, -1.2, 0.5, 1.8, -0.7, 2.3, 0.2, -1.5, 1.1, 0.9, -0.4, 2.0, 0.7, -1.8, 1.3, 0.6, -0.9]}"
 ```
@@ -35,7 +35,7 @@ curl -X POST http://localhost:8000/predict \
 ## 📊 View Dashboards
 
 1. **Grafana**: http://localhost:3000 → Dashboards → MLOps API Dashboard
-2. **MLflow**: http://localhost:5000 → Models → ml_classifier
+2. **MLflow**: http://localhost:5001 → Models → ml_classifier
 
 ## 🛑 Stop Services
 
