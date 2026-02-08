@@ -44,19 +44,18 @@ def train_model():
             "random_state": 42
         }
         
-        # ✅ TASK 1: Log parameters
+       
         mlflow.log_params(params)
         logger.info(f"Logged parameters: {params}")
         
-        # Train model
+  
         logger.info("Training model...")
         model = RandomForestClassifier(**params)
         model.fit(X_train, y_train)
         
-        # Make predictions
         y_pred = model.predict(X_test)
         
-        # Calculate metrics
+     
         metrics = {
             "accuracy": accuracy_score(y_test, y_pred),
             "precision": precision_score(y_test, y_pred, average='weighted'),
@@ -64,7 +63,7 @@ def train_model():
             "f1_score": f1_score(y_test, y_pred, average='weighted')
         }
         
-        # ✅ TASK 2: Log metrics
+    
         mlflow.log_metrics(metrics)
         logger.info(f"Logged metrics: {metrics}")
         
