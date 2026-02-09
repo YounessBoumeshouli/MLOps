@@ -6,6 +6,9 @@ global:
   external_labels:
     monitor: 'mlops-monitor'
 
+rule_files:
+  - "/etc/prometheus/prometheus_rules.yml"
+
 # Scrape configurations
 scrape_configs:
   # Prometheus self-monitoring

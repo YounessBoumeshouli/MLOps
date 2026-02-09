@@ -32,30 +32,9 @@
                         "drawStyle": "line",
                         "fillOpacity": 10,
                         "gradientMode": "none",
-                        "hideFrom": {
-                            "tooltip": false,
-                            "viz": false,
-                            "legend": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": true
+                        "showPoints": "never"
                     },
                     "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
                     "unit": "reqps"
                 }
             },
@@ -66,19 +45,6 @@
                 "y": 0
             },
             "id": 1,
-            "options": {
-                "legend": {
-                    "calcs": [
-                        "mean",
-                        "lastNotNull"
-                    ],
-                    "displayMode": "table",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "single"
-                }
-            },
             "targets": [
                 {
                     "expr": "rate(api_requests_total[1m])",
@@ -96,7 +62,6 @@
                     "color": {
                         "mode": "thresholds"
                     },
-                    "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
                         "steps": [
@@ -113,8 +78,7 @@
                                 "value": 500
                             }
                         ]
-                    },
-                    "unit": "short"
+                    }
                 }
             },
             "gridPos": {
@@ -124,18 +88,6 @@
                 "y": 0
             },
             "id": 2,
-            "options": {
-                "orientation": "auto",
-                "reduceOptions": {
-                    "values": false,
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": ""
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
             "targets": [
                 {
                     "expr": "sum(rate(api_requests_total[5m]))",
@@ -152,37 +104,7 @@
                     "color": {
                         "mode": "palette-classic"
                     },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "barAlignment": 0,
-                        "drawStyle": "line",
-                        "fillOpacity": 10,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "tooltip": false,
-                            "viz": false,
-                            "legend": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 2,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": true
-                    },
                     "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
                     "unit": "s"
                 }
             },
@@ -193,37 +115,14 @@
                 "y": 8
             },
             "id": 3,
-            "options": {
-                "legend": {
-                    "calcs": [
-                        "mean",
-                        "max"
-                    ],
-                    "displayMode": "table",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "single"
-                }
-            },
             "targets": [
-                {
-                    "expr": "histogram_quantile(0.50, rate(api_request_duration_seconds_bucket[5m]))",
-                    "legendFormat": "P50",
-                    "refId": "A"
-                },
                 {
                     "expr": "histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[5m]))",
                     "legendFormat": "P95",
                     "refId": "B"
-                },
-                {
-                    "expr": "histogram_quantile(0.99, rate(api_request_duration_seconds_bucket[5m]))",
-                    "legendFormat": "P99",
-                    "refId": "C"
                 }
             ],
-            "title": "Request Latency Percentiles",
+            "title": "Request Latency (P95)",
             "type": "timeseries"
         },
         {
@@ -233,37 +132,7 @@
                     "color": {
                         "mode": "palette-classic"
                     },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "barAlignment": 0,
-                        "drawStyle": "line",
-                        "fillOpacity": 10,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "tooltip": false,
-                            "viz": false,
-                            "legend": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": true
-                    },
                     "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
                     "unit": "percent"
                 }
             },
@@ -274,18 +143,6 @@
                 "y": 8
             },
             "id": 4,
-            "options": {
-                "legend": {
-                    "calcs": [
-                        "mean"
-                    ],
-                    "displayMode": "table",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "single"
-                }
-            },
             "targets": [
                 {
                     "expr": "rate(api_requests_total{status=~\"5..\"}[5m]) / rate(api_requests_total[5m]) * 100",
@@ -303,125 +160,120 @@
                     "color": {
                         "mode": "palette-classic"
                     },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "barAlignment": 0,
-                        "drawStyle": "line",
-                        "fillOpacity": 10,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "tooltip": false,
-                            "viz": false,
-                            "legend": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": true
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unit": "s"
+                    "min": 0,
+                    "max": 1,
+                    "unit": "percentunit"
                 }
             },
             "gridPos": {
                 "h": 8,
-                "w": 12,
+                "w": 6,
                 "x": 0,
                 "y": 16
             },
             "id": 5,
-            "options": {
-                "legend": {
-                    "calcs": [
-                        "mean",
-                        "max"
-                    ],
-                    "displayMode": "table",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "single"
-                }
-            },
             "targets": [
                 {
-                    "expr": "rate(prediction_duration_seconds_sum[5m]) / rate(prediction_duration_seconds_count[5m])",
-                    "legendFormat": "Avg Inference Time",
+                    "expr": "model_training_accuracy",
+                    "legendFormat": "v{{model_version}} Accuracy",
                     "refId": "A"
                 }
             ],
-            "title": "Model Inference Time",
-            "type": "timeseries"
+            "title": "Model Training Accuracy",
+            "type": "gauge"
         },
         {
             "datasource": "Prometheus",
             "fieldConfig": {
                 "defaults": {
                     "color": {
-                        "mode": "thresholds"
+                        "mode": "palette-classic"
                     },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unit": "short"
+                    "min": 0,
+                    "max": 1,
+                    "unit": "percentunit"
                 }
             },
             "gridPos": {
                 "h": 8,
-                "w": 12,
-                "x": 12,
+                "w": 6,
+                "x": 6,
                 "y": 16
             },
             "id": 6,
-            "options": {
-                "orientation": "auto",
-                "reduceOptions": {
-                    "values": false,
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": ""
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
             "targets": [
                 {
-                    "expr": "sum(predictions_total)",
+                    "expr": "model_training_f1_score",
+                    "legendFormat": "v{{model_version}} F1 Score",
                     "refId": "A"
                 }
             ],
-            "title": "Total Predictions Made",
-            "type": "stat"
+            "title": "Model Training F1 Score",
+            "type": "gauge"
+        },
+        {
+            "datasource": "Prometheus",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "min": 0,
+                    "max": 1,
+                    "unit": "percentunit"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 12,
+                "y": 16
+            },
+            "id": 7,
+            "targets": [
+                {
+                    "expr": "model_training_precision",
+                    "legendFormat": "v{{model_version}} Precision",
+                    "refId": "A"
+                }
+            ],
+            "title": "Model Training Precision",
+            "type": "gauge"
+        },
+        {
+            "datasource": "Prometheus",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "min": 0,
+                    "max": 1,
+                    "unit": "percentunit"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 18,
+                "y": 16
+            },
+            "id": 8,
+            "targets": [
+                {
+                    "expr": "model_training_recall",
+                    "legendFormat": "v{{model_version}} Recall",
+                    "refId": "A"
+                }
+            ],
+            "title": "Model Training Recall",
+            "type": "gauge"
         }
     ],
     "schemaVersion": 27,
     "style": "dark",
     "tags": [
-        "mlops",
-        "api",
-        "monitoring"
+        "mlops"
     ],
     "templating": {
         "list": []

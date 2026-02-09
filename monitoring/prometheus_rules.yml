@@ -1,0 +1,29 @@
+groups:
+  - name: mlops-alerts
+    rules:
+    - alert: HighErrorRate
+      expr: rate(api_errors_total[5m]) > 0.1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High API Error Rate"
+        description: "API is returning errors for > 10% of requests."
+
+    - alert: HighLatency
+      expr: histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[5m])) > 2
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High API Latency"
+        description: "95th percentile latency is > 2 seconds."
+
+    - alert: InstanceDown
+      expr: up{job="mlops-api"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Instance {{ $labels.instance }} down"
+        description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."

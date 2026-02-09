@@ -13,12 +13,7 @@ from datetime import datetime
 
 
 class PredictionRequest(BaseModel):
-    """
-    Request model for prediction endpoint.
-    
-    Attributes:
-        features: List of numerical features for prediction
-    """
+
     features: List[float] = Field(
         ...,
         description="List of numerical features for model prediction",
@@ -27,11 +22,10 @@ class PredictionRequest(BaseModel):
     
     @validator('features')
     def validate_features(cls, v):
-        """Validate that features list is not empty and has correct length."""
         if len(v) == 0:
             raise ValueError("Features list cannot be empty")
-        if len(v) != 20:  # Adjust based on your model's expected input
-            raise ValueError(f"Expected 20 features, got {len(v)}")
+        if len(v) != 8:
+            raise ValueError(f"Expected 8 features, got {len(v)}")
         return v
     
     class Config:
@@ -39,24 +33,14 @@ class PredictionRequest(BaseModel):
             "example": {
                 "features": [
                     1.5, -0.3, 2.1, 0.8, -1.2,
-                    0.5, 1.8, -0.7, 2.3, 0.2,
-                    -1.5, 1.1, 0.9, -0.4, 2.0,
-                    0.7, -1.8, 1.3, 0.6, -0.9
+                    0.5, 1.8, -0.7
                 ]
             }
         }
 
 
 class PredictionResponse(BaseModel):
-    """
-    Response model for prediction endpoint.
-    
-    Attributes:
-        prediction: The predicted class (0 or 1)
-        probability: Probability scores for each class
-        model_version: Version of the model used for prediction
-        timestamp: When the prediction was made
-    """
+
     prediction: int = Field(
         ...,
         description="Predicted class label",

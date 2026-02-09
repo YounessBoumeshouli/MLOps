@@ -19,7 +19,7 @@ import mlflow.pyfunc
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 
 from .models import PredictionRequest, PredictionResponse, HealthResponse, ErrorResponse
 
@@ -31,6 +31,29 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Prometheus metrics
+MODEL_ACCURACY = Gauge(
+    'model_training_accuracy',
+    'Model training accuracy score',
+    ['model_version']
+)
+
+MODEL_F1_SCORE = Gauge(
+    'model_training_f1_score',
+    'Model training F1 score',
+    ['model_version']
+)
+
+MODEL_PRECISION = Gauge(
+    'model_training_precision',
+    'Model training precision score',
+    ['model_version']
+)
+
+MODEL_RECALL = Gauge(
+    'model_training_recall',
+    'Model training recall score',
+    ['model_version']
+)
 REQUEST_COUNT = Counter(
     'api_requests_total',
     'Total number of API requests',
@@ -95,7 +118,28 @@ def load_model_from_mlflow(model_name: str = "ml_classifier", stage: str = "Prod
         
         if model_versions:
             version = model_versions[0].version
-            logger.info(f"Successfully loaded model version {version}")
+            run_id = model_versions[0].run_id
+            logger.info(f"Successfully loaded model version {version} (Run ID: {run_id})")
+            
+            # Fetch run metrics
+            try:
+                run = client.get_run(run_id)
+                metrics = run.data.metrics
+                
+                # Update Prometheus gauges
+                if "accuracy" in metrics:
+                    MODEL_ACCURACY.labels(model_version=version).set(metrics["accuracy"])
+                if "f1_score" in metrics:
+                    MODEL_F1_SCORE.labels(model_version=version).set(metrics["f1_score"])
+                if "precision" in metrics:
+                    MODEL_PRECISION.labels(model_version=version).set(metrics["precision"])
+                if "recall" in metrics:
+                    MODEL_RECALL.labels(model_version=version).set(metrics["recall"])
+                    
+                logger.info(f"Updated Prometheus metrics for version {version}")
+            except Exception as e:
+                logger.warning(f"Failed to fetch metrics for run {run_id}: {e}")
+
             return model, version
         else:
             logger.warning(f"No model found in stage '{stage}'")
