@@ -100,7 +100,7 @@ def load_model_from_mlflow(model_name: str = "ml_classifier", stage: str = "Prod
         stage: Model stage (Production, Staging, None)
     
     Returns:
-        Loaded model and version information
+        Loaded model and version information<
     """
     try:
         mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
